@@ -1,19 +1,16 @@
 import DarkModeToggle from './components/DarkModeToggle';
 import FloatingButton from './components/FloatingButton';
-import InitialContentToggle from './components/InitialContentToggle';
-import React, {useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import Sidebar from './components/Sidebar';
 import TitleTextBox from './components/TitleTextBox';
-import Watermark from './components/Watermark';
 import WordCount from './components/WordCount';
 import basicContent from './content/basic-content.json';
 import content from './content/content.json';
 import minimalContent from './content/minimal-content.json';
 import {$getRoot, $isDecoratorNode} from 'lexical';
 import {
-    BASIC_NODES, BASIC_TRANSFORMERS, KoenigComposableEditor,
-    KoenigComposer, KoenigEditor, MINIMAL_NODES, MINIMAL_TRANSFORMERS,
-    RestrictContentPlugin,
+    BASIC_NODES,
+    KoenigComposer, KoenigEditor, MINIMAL_NODES,
     TKCountPlugin,
     WordCountPlugin
 } from '../src';
@@ -69,31 +66,7 @@ function getAllowedNodes({editorType}) {
     return undefined;
 }
 
-function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setWordCount, setTKCount}) {
-    if (editorType === 'basic') {
-        return (
-            <KoenigComposableEditor
-                cursorDidExitAtTop={cursorDidExitAtTop}
-                markdownTransformers={BASIC_TRANSFORMERS}
-                registerAPI={registerAPI}
-            >
-                <WordCountPlugin onChange={setWordCount} />
-            </KoenigComposableEditor>
-        );
-    } else if (editorType === 'minimal') {
-        return (
-            <KoenigComposableEditor
-                cursorDidExitAtTop={cursorDidExitAtTop}
-                isSnippetsEnabled={false}
-                markdownTransformers={MINIMAL_TRANSFORMERS}
-                registerAPI={registerAPI}
-            >
-                <RestrictContentPlugin paragraphs={1} />
-                <WordCountPlugin onChange={setWordCount} />
-            </KoenigComposableEditor>
-        );
-    }
-
+function DemoEditor({registerAPI, cursorDidExitAtTop, darkMode, setWordCount, setTKCount}) {
     return (
         <KoenigEditor
             cursorDidExitAtTop={cursorDidExitAtTop}
@@ -113,16 +86,16 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
     const {snippets, createSnippet, deleteSnippet} = useSnippets();
     const {collections, fetchCollectionPosts} = useCollections();
 
-    const skipFocusEditor = React.useRef(false);
+    const skipFocusEditor = useRef(false);
 
     const darkMode = searchParams.get('darkMode') === 'true';
     const contentParam = searchParams.get('content');
 
-    const defaultContent = React.useMemo(() => {
+    const defaultContent = useMemo(() => {
         return JSON.stringify(getDefaultContent({editorType}));
     }, [editorType]);
 
-    const initialContent = React.useMemo(() => {
+    const initialContent = useMemo(() => {
         if (isMultiplayer) {
             return null;
         }
@@ -134,10 +107,11 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
         return contentParam ? decodeURIComponent(contentParam) : defaultContent;
     }, [isMultiplayer, contentParam, defaultContent]);
 
-    const [title, setTitle] = useState(initialContent ? 'Meet the Koenig editor.' : '');
+    // const [title, setTitle] = useState(initialContent ? 'Meet the Koenig editor.' : '');
+    const [title, setTitle] = useState('');
     const [editorAPI, setEditorAPI] = useState(null);
-    const titleRef = React.useRef(null);
-    const containerRef = React.useRef(null);
+    const titleRef = useRef(null);
+    const containerRef = useRef(null);
 
     function openSidebar(view = 'json') {
         if (isSidebarOpen && sidebarView === view) {
@@ -216,12 +190,15 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
 
     function saveContent() {
         const serializedState = editorAPI.serialize();
+
+        window.parent.postMessage(JSON.stringify(serializedState), 'http://localhost:3000');
+
         const encodedContent = encodeURIComponent(serializedState);
         searchParams.set('content', encodedContent);
         setSearchParams(searchParams);
     }
 
-    React.useEffect(() => {
+    useEffect(() => {
         const handleFileDrag = (event) => {
             event.preventDefault();
         };
@@ -233,10 +210,8 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
             }
         };
 
-        function receiveMessage(event)
-        {
-            if(event.origin !== "http://localhost:3000")
-            {
+        function receiveMessage(event) {
+            if (event.origin !== 'http://localhost:3000') {
                 return;
             }
 
@@ -248,12 +223,12 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
 
         window.addEventListener('dragover', handleFileDrag);
         window.addEventListener('drop', handleFileDrop);
-        window.addEventListener("message", receiveMessage, false);
+        window.addEventListener('message', receiveMessage, false);
 
         return () => {
             window.removeEventListener('dragover', handleFileDrag);
             window.removeEventListener('drop', handleFileDrop);
-            window.removeEventListener("message", receiveMessage, false);
+            window.removeEventListener('message', receiveMessage, false);
         };
     }, [editorAPI]);
 
@@ -272,11 +247,6 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
             nodes={getAllowedNodes({editorType})}
         >
             <div className={`koenig-demo relative h-full grow ${darkMode ? 'dark' : ''}`} style={isSidebarOpen ? {'--kg-breakout-adjustment': '440px'} : {}}>
-                {
-                    !isMultiplayer && searchParams !== 'false'
-                        ? <InitialContentToggle defaultContent={defaultContent} searchParams={searchParams} setSearchParams={setSearchParams} setTitle={setTitle} />
-                        : null
-                }
                 <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
                 <div ref={containerRef} className="h-full overflow-auto overflow-x-hidden" onClick={focusEditor} onMouseDown={maybeSkipFocusEditor}>
                     <div className="mx-auto max-w-[740px] px-6 py-[15vmin] lg:px-0">
@@ -295,9 +265,6 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
                     </div>
                 </div>
             </div>
-            <Watermark
-                editorType={editorType || 'full'}
-            />
             <div className="absolute z-20 flex h-full flex-col items-end sm:relative">
                 <Sidebar isOpen={isSidebarOpen} saveContent={saveContent} view={sidebarView} />
                 <FloatingButton isOpen={isSidebarOpen} onClick={openSidebar} />
