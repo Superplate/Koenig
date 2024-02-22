@@ -198,7 +198,8 @@ function DemoComposer({ isMultiplayer, setWordCount, setTKCount}) {
         window.addEventListener('drop', handleFileDrop);
         window.addEventListener('message', receiveMessage, false);
 
-        return () => {
+        return () =>
+        {
             window.removeEventListener('dragover', handleFileDrag);
             window.removeEventListener('drop', handleFileDrop);
             window.removeEventListener('message', receiveMessage, false);
@@ -207,33 +208,33 @@ function DemoComposer({ isMultiplayer, setWordCount, setTKCount}) {
 
     return (
         <KoenigComposer
-            cardConfig={{...cardConfig, snippets, createSnippet, deleteSnippet, collections, fetchCollectionPosts}}
-            darkMode={darkMode}
-            enableMultiplayer={isMultiplayer}
-            fileUploader={{useFileUpload: useFileUpload({isMultiplayer}), fileTypes}}
-            initialEditorState={initialContent}
-            isTKEnabled={true} // TODO: can we move this onto <KoenigEditor>?
-            multiplayerDocId={`demo/${WEBSOCKET_ID}`}
-            multiplayerEndpoint={WEBSOCKET_ENDPOINT}
+            cardConfig={{ ...cardConfig, snippets, createSnippet, deleteSnippet, collections, fetchCollectionPosts }}
+            darkMode={ darkMode }
+            enableMultiplayer={ isMultiplayer }
+            fileUploader={{ useFileUpload: useFileUpload({ isMultiplayer }), fileTypes }}
+            initialEditorState={ initialContent }
+            isTKEnabled={true}
+            multiplayerDocId={ `demo/${WEBSOCKET_ID}` }
+            multiplayerEndpoint={ WEBSOCKET_ENDPOINT }
         >
-            <div className={`koenig-demo relative h-full grow ${darkMode ? 'dark' : ''}`} style={isSidebarOpen ? {'--kg-breakout-adjustment': '440px'} : {}}>
-                <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-                <div ref={containerRef} className="h-full overflow-auto overflow-x-hidden" onClick={focusEditor} onMouseDown={maybeSkipFocusEditor}>
+            <div className={ `koenig-demo relative h-full grow ${darkMode ? 'dark' : ''}` } style={ isSidebarOpen ? {'--kg-breakout-adjustment': '440px'} : {} }>
+                <DarkModeToggle darkMode={ darkMode } toggleDarkMode={ toggleDarkMode }/>
+                <div ref={ containerRef } className="h-full overflow-auto overflow-x-hidden" onClick={ focusEditor } onMouseDown={ maybeSkipFocusEditor }>
                     <div className="mx-auto max-w-[740px] px-6 py-[15vmin] lg:px-0">
-                        <TitleTextBox ref={titleRef} editorAPI={editorAPI} setTitle={setTitle} title={title}/>
+                        <TitleTextBox ref={ titleRef } editorAPI={ editorAPI } setTitle={ setTitle } title={ title }/>
                         <DemoEditor
-                            cursorDidExitAtTop={focusTitle}
-                            darkMode={darkMode}
-                            registerAPI={setEditorAPI}
-                            setTKCount={setTKCount}
-                            setWordCount={setWordCount}
+                            cursorDidExitAtTop={ focusTitle }
+                            darkMode={ darkMode }
+                            registerAPI={ setEditorAPI }
+                            setTKCount={ setTKCount }
+                            setWordCount={ setWordCount }
                         />
                     </div>
                 </div>
             </div>
             <div className="absolute z-20 flex h-full flex-col items-end sm:relative">
-                <Sidebar isOpen={isSidebarOpen} saveContent={saveContent} view={sidebarView} />
-                <FloatingButton isOpen={isSidebarOpen} onClick={openSidebar} />
+                <Sidebar isOpen={ isSidebarOpen } saveContent={ saveContent } view={ sidebarView }/>
+                <FloatingButton isOpen={ isSidebarOpen } onClick={ openSidebar }/>
             </div>
         </KoenigComposer>
     );
