@@ -44,37 +44,42 @@ const cardConfig = {
     }
 };
 
-function DemoEditor({registerAPI, cursorDidExitAtTop, darkMode, setWordCount, setTKCount}) {
+function DemoEditor({ registerAPI, cursorDidExitAtTop, darkMode, setWordCount, setTKCount })
+{
     return (
         <KoenigEditor
-            cursorDidExitAtTop={cursorDidExitAtTop}
-            darkMode={darkMode}
-            registerAPI={registerAPI}
+            cursorDidExitAtTop={ cursorDidExitAtTop }
+            darkMode={ darkMode }
+            registerAPI={ registerAPI }
         >
-            <WordCountPlugin onChange={setWordCount} />
-            <TKCountPlugin onChange={setTKCount} />
+            <WordCountPlugin onChange={ setWordCount }/>
+            <TKCountPlugin onChange={ setTKCount }/>
         </KoenigEditor>
     );
 }
 
-function DemoComposer({ isMultiplayer, setWordCount, setTKCount}) {
+function DemoComposer({ isMultiplayer, setWordCount, setTKCount })
+{
     const [searchParams, setSearchParams] = useSearchParams();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sidebarView, setSidebarView] = useState('json');
-    const {snippets, createSnippet, deleteSnippet} = useSnippets();
-    const {collections, fetchCollectionPosts} = useCollections();
+    const { snippets, createSnippet, deleteSnippet } = useSnippets();
+    const { collections, fetchCollectionPosts } = useCollections();
 
     const skipFocusEditor = useRef(false);
 
     const darkMode = searchParams.get('darkMode') === 'true';
     const contentParam = searchParams.get('content');
 
-    const initialContent = useMemo(() => {
-        if (isMultiplayer) {
-            return null;
-        }
+    const initialContent = useMemo(() =>
+    {
+        // if (isMultiplayer)
+        // {
+        //     return null;
+        // }
 
-        if (contentParam === 'false') {
+        if (contentParam === 'false')
+        {
             return undefined;
         }
 
@@ -87,15 +92,19 @@ function DemoComposer({ isMultiplayer, setWordCount, setTKCount}) {
     const titleRef = useRef(null);
     const containerRef = useRef(null);
 
-    function openSidebar(view = 'json') {
-        if (isSidebarOpen && sidebarView === view) {
+    function openSidebar(view = 'json')
+    {
+        if (isSidebarOpen && sidebarView === view)
+        {
             return setIsSidebarOpen(false);
         }
+
         setSidebarView(view);
         setIsSidebarOpen(true);
     }
 
-    function focusTitle() {
+    function focusTitle()
+    {
         titleRef.current?.focus();
     }
 
@@ -103,11 +112,13 @@ function DemoComposer({ isMultiplayer, setWordCount, setTKCount}) {
     // mouseup/click event can occur outside of the initially clicked node, in
     // which case we don't want to then "re-focus" the editor and cause unexpected
     // selection changes
-    function maybeSkipFocusEditor(event) {
+    function maybeSkipFocusEditor(event)
+    {
         const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lexical-decorator');
         const clickedOnSlashMenu = (event.target.closest('[data-kg-slash-menu]') !== null) || event.target.hasAttribute('data-kg-slash-menu');
 
-        if (clickedOnDecorator || clickedOnSlashMenu) {
+        if (clickedOnDecorator || clickedOnSlashMenu)
+        {
             skipFocusEditor.current = true;
         }
     }
@@ -116,13 +127,15 @@ function DemoComposer({ isMultiplayer, setWordCount, setTKCount}) {
         const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lexical-decorator');
         const clickedOnSlashMenu = (event.target.closest('[data-kg-slash-menu]') !== null) || event.target.hasAttribute('data-kg-slash-menu');
 
-        if (!skipFocusEditor.current && editorAPI && !clickedOnDecorator && !clickedOnSlashMenu) {
+        if (!skipFocusEditor.current && editorAPI && !clickedOnDecorator && !clickedOnSlashMenu)
+        {
             let editor = editorAPI.editorInstance;
 
             // if a mousedown and subsequent mouseup occurs below the editor
             // canvas, focus the editor and put the cursor at the end of the document
-            let {bottom} = editor._rootElement.getBoundingClientRect();
-            if (event.pageY > bottom && event.clientY > bottom) {
+            let { bottom} = editor._rootElement.getBoundingClientRect();
+            if (event.pageY > bottom && event.clientY > bottom)
+            {
                 event.preventDefault();
 
                 // we should always have a visible cursor when focusing
@@ -130,20 +143,23 @@ function DemoComposer({ isMultiplayer, setWordCount, setTKCount}) {
                 // section is a card
                 let addLastParagraph = false;
 
-                editor.getEditorState().read(() => {
+                editor.getEditorState().read(() =>
+                {
                     const lastNode = $getRoot().getChildren().at(-1);
 
-                    if ($isDecoratorNode(lastNode)) {
+                    if ($isDecoratorNode(lastNode))
+                    {
                         addLastParagraph = true;
                     }
                 });
 
-                if (addLastParagraph) {
+                if (addLastParagraph)
+                {
                     editorAPI.insertParagraphAtBottom();
                 }
 
                 // Focus the editor
-                editorAPI.focusEditor({position: 'bottom'});
+                editorAPI.focusEditor({ position: 'bottom' });
 
                 //scroll to the bottom of the container
                 containerRef.current.scrollTop = containerRef.current.scrollHeight;
@@ -162,7 +178,8 @@ function DemoComposer({ isMultiplayer, setWordCount, setTKCount}) {
         setSearchParams(searchParams);
     }
 
-    function saveContent() {
+    function saveContent()
+    {
         const serializedState = editorAPI.serialize();
 
         window.parent.postMessage(JSON.stringify(serializedState), 'http://localhost:3000');
@@ -172,20 +189,26 @@ function DemoComposer({ isMultiplayer, setWordCount, setTKCount}) {
         setSearchParams(searchParams);
     }
 
-    useEffect(() => {
-        const handleFileDrag = (event) => {
+    useEffect(() =>
+    {
+        const handleFileDrag = (event) =>
+        {
             event.preventDefault();
         };
 
-        const handleFileDrop = (event) => {
-            if (event.dataTransfer.files.length > 0) {
+        const handleFileDrop = (event) =>
+        {
+            if (event.dataTransfer.files.length > 0)
+            {
                 event.preventDefault();
                 editorAPI?.insertFiles(Array.from(event.dataTransfer.files));
             }
         };
 
-        function receiveMessage(event) {
-            if (event.origin !== 'http://localhost:3000') {
+        function receiveMessage(event)
+        {
+            if (event.origin !== 'http://localhost:3000')
+            {
                 return;
             }
 
