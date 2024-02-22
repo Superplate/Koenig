@@ -55,7 +55,6 @@ function DemoComposer({ isMultiplayer, setWordCount, setTKCount })
     const [searchParams, setSearchParams] = useSearchParams();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sidebarView, setSidebarView] = useState('json');
-    const [initialContent, setInitialContent] = useState(undefined);
 
     const { snippets, createSnippet, deleteSnippet } = useSnippets();
     const { collections, fetchCollectionPosts } = useCollections();
@@ -177,7 +176,7 @@ function DemoComposer({ isMultiplayer, setWordCount, setTKCount })
     {
         if(editorAPI)
         {
-            console.log('ready to receive');
+            window.parent.postMessage("ready to receive!", 'http://localhost:3000');
         }
 
         const handleFileDrag = (event) =>
@@ -201,7 +200,9 @@ function DemoComposer({ isMultiplayer, setWordCount, setTKCount })
                 return;
             }
 
-            console.log('리턴 : ', event.data);
+            console.log(editorAPI.editorInstance);
+            const parsed = editorAPI.editorInstance.parseEditorState(event.data);
+            editorAPI.editorInstance.setEditorState(parsed);
             // TODO 이벤트 데이터를 파싱해서 Key를 구분해서 액션을 처리해야 함.
             // TODO 처리한 다음 response가 필요하면 postMessage
         }
@@ -224,7 +225,6 @@ function DemoComposer({ isMultiplayer, setWordCount, setTKCount })
             darkMode={ darkMode }
             enableMultiplayer={ isMultiplayer }
             fileUploader={{ useFileUpload: useFileUpload({ isMultiplayer }), fileTypes }}
-            initialEditorState={ initialContent }
             isTKEnabled={true}
             multiplayerDocId={ `demo/${WEBSOCKET_ID}` }
             multiplayerEndpoint={ WEBSOCKET_ENDPOINT }
