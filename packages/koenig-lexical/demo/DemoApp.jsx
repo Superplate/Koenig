@@ -4,13 +4,9 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 import Sidebar from './components/Sidebar';
 import TitleTextBox from './components/TitleTextBox';
 import WordCount from './components/WordCount';
-import basicContent from './content/basic-content.json';
-import content from './content/content.json';
-import minimalContent from './content/minimal-content.json';
 import {$getRoot, $isDecoratorNode} from 'lexical';
 import {
-    BASIC_NODES,
-    KoenigComposer, KoenigEditor, MINIMAL_NODES,
+    KoenigComposer, KoenigEditor,
     TKCountPlugin,
     WordCountPlugin
 } from '../src';
@@ -48,24 +44,6 @@ const cardConfig = {
     }
 };
 
-function getDefaultContent({editorType}) {
-    if (editorType === 'basic') {
-        return basicContent;
-    } else if (editorType === 'minimal') {
-        return minimalContent;
-    }
-    return content;
-}
-
-function getAllowedNodes({editorType}) {
-    if (editorType === 'basic') {
-        return BASIC_NODES;
-    } else if (editorType === 'minimal') {
-        return MINIMAL_NODES;
-    }
-    return undefined;
-}
-
 function DemoEditor({registerAPI, cursorDidExitAtTop, darkMode, setWordCount, setTKCount}) {
     return (
         <KoenigEditor
@@ -79,7 +57,7 @@ function DemoEditor({registerAPI, cursorDidExitAtTop, darkMode, setWordCount, se
     );
 }
 
-function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
+function DemoComposer({ isMultiplayer, setWordCount, setTKCount}) {
     const [searchParams, setSearchParams] = useSearchParams();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sidebarView, setSidebarView] = useState('json');
@@ -91,10 +69,6 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
     const darkMode = searchParams.get('darkMode') === 'true';
     const contentParam = searchParams.get('content');
 
-    const defaultContent = useMemo(() => {
-        return JSON.stringify(getDefaultContent({editorType}));
-    }, [editorType]);
-
     const initialContent = useMemo(() => {
         if (isMultiplayer) {
             return null;
@@ -104,8 +78,8 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
             return undefined;
         }
 
-        return contentParam ? decodeURIComponent(contentParam) : defaultContent;
-    }, [isMultiplayer, contentParam, defaultContent]);
+        return contentParam && decodeURIComponent(contentParam);
+    }, [isMultiplayer, contentParam]);
 
     // const [title, setTitle] = useState(initialContent ? 'Meet the Koenig editor.' : '');
     const [title, setTitle] = useState('');
@@ -218,7 +192,6 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
             console.log(event.data);
             // TODO 이벤트 데이터를 파싱해서 Key를 구분해서 액션을 처리해야 함.
             // TODO 처리한 다음 response가 필요하면 postMessage
-            // window.parent.postMessage('message', 'http://localhost:3000');
         }
 
         window.addEventListener('dragover', handleFileDrag);
@@ -232,8 +205,6 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
         };
     }, [editorAPI]);
 
-    const showTitle = !isMultiplayer && !['basic', 'minimal'].includes(editorType);
-
     return (
         <KoenigComposer
             cardConfig={{...cardConfig, snippets, createSnippet, deleteSnippet, collections, fetchCollectionPosts}}
@@ -244,20 +215,15 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
             isTKEnabled={true} // TODO: can we move this onto <KoenigEditor>?
             multiplayerDocId={`demo/${WEBSOCKET_ID}`}
             multiplayerEndpoint={WEBSOCKET_ENDPOINT}
-            nodes={getAllowedNodes({editorType})}
         >
             <div className={`koenig-demo relative h-full grow ${darkMode ? 'dark' : ''}`} style={isSidebarOpen ? {'--kg-breakout-adjustment': '440px'} : {}}>
                 <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
                 <div ref={containerRef} className="h-full overflow-auto overflow-x-hidden" onClick={focusEditor} onMouseDown={maybeSkipFocusEditor}>
                     <div className="mx-auto max-w-[740px] px-6 py-[15vmin] lg:px-0">
-                        {showTitle
-                            ? <TitleTextBox ref={titleRef} editorAPI={editorAPI} setTitle={setTitle} title={title} />
-                            : null
-                        }
+                        <TitleTextBox ref={titleRef} editorAPI={editorAPI} setTitle={setTitle} title={title}/>
                         <DemoEditor
                             cursorDidExitAtTop={focusTitle}
                             darkMode={darkMode}
-                            editorType={editorType}
                             registerAPI={setEditorAPI}
                             setTKCount={setTKCount}
                             setWordCount={setWordCount}
@@ -275,7 +241,8 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
 
 const MemoizedDemoComposer = React.memo(DemoComposer);
 
-function DemoApp({editorType, isMultiplayer}) {
+export default function DemoApp({ isMultiplayer })
+{
     const [wordCount, setWordCount] = useState(0);
     const [tkCount, setTKCount] = useState(0);
 
@@ -284,21 +251,15 @@ function DemoApp({editorType, isMultiplayer}) {
     const location = useLocation();
 
     return (
-        <div
-            key={location.key}
-            className={`koenig-lexical top`}
-        >
+        <div key={ location.key } className="koenig-lexical top">
             {/* outside of DemoComposer to avoid re-renders and flaky tests when word count changes */}
-            <WordCount tkCount={tkCount} wordCount={wordCount} />
+            <WordCount tkCount={ tkCount } wordCount={ wordCount }/>
 
             <MemoizedDemoComposer
-                editorType={editorType}
-                isMultiplayer={isMultiplayer}
-                setTKCount={setTKCount}
-                setWordCount={setWordCount}
+                isMultiplayer={ isMultiplayer }
+                setTKCount={ setTKCount }
+                setWordCount={ setWordCount }
             />
         </div>
     );
 }
-
-export default DemoApp;
