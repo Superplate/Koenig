@@ -55,28 +55,14 @@ function DemoComposer({ isMultiplayer, setWordCount, setTKCount })
     const [searchParams, setSearchParams] = useSearchParams();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sidebarView, setSidebarView] = useState('json');
+    const [initialContent, setInitialContent] = useState(undefined);
+
     const { snippets, createSnippet, deleteSnippet } = useSnippets();
     const { collections, fetchCollectionPosts } = useCollections();
 
     const skipFocusEditor = useRef(false);
 
     const darkMode = searchParams.get('darkMode') === 'true';
-    const contentParam = searchParams.get('content');
-
-    const initialContent = useMemo(() =>
-    {
-        // if (isMultiplayer)
-        // {
-        //     return null;
-        // }
-
-        if (contentParam === 'false')
-        {
-            return undefined;
-        }
-
-        return contentParam && decodeURIComponent(contentParam);
-    }, [isMultiplayer, contentParam]);
 
     // const [title, setTitle] = useState(initialContent ? 'Meet the Koenig editor.' : '');
     const [title, setTitle] = useState('');
@@ -115,7 +101,8 @@ function DemoComposer({ isMultiplayer, setWordCount, setTKCount })
         }
     }
 
-    function focusEditor(event) {
+    function focusEditor(event)
+    {
         const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lexical-decorator');
         const clickedOnSlashMenu = (event.target.closest('[data-kg-slash-menu]') !== null) || event.target.hasAttribute('data-kg-slash-menu');
 
@@ -161,12 +148,17 @@ function DemoComposer({ isMultiplayer, setWordCount, setTKCount })
         skipFocusEditor.current = false;
     }
 
-    function toggleDarkMode() {
-        if (darkMode) {
+    function toggleDarkMode()
+    {
+        if (darkMode)
+        {
             searchParams.delete('darkMode');
-        } else {
+        }
+        else
+        {
             searchParams.set('darkMode', 'true');
         }
+
         setSearchParams(searchParams);
     }
 
@@ -183,6 +175,11 @@ function DemoComposer({ isMultiplayer, setWordCount, setTKCount })
 
     useEffect(() =>
     {
+        if(editorAPI)
+        {
+            console.log('ready to receive');
+        }
+
         const handleFileDrag = (event) =>
         {
             event.preventDefault();
@@ -204,7 +201,7 @@ function DemoComposer({ isMultiplayer, setWordCount, setTKCount })
                 return;
             }
 
-            console.log(event.data);
+            console.log('리턴 : ', event.data);
             // TODO 이벤트 데이터를 파싱해서 Key를 구분해서 액션을 처리해야 함.
             // TODO 처리한 다음 response가 필요하면 postMessage
         }
