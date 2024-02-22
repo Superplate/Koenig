@@ -233,12 +233,27 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
             }
         };
 
+        function receiveMessage(event)
+        {
+            if(event.origin !== "http://localhost:3000")
+            {
+                return;
+            }
+
+            console.log(event.data);
+            // TODO 이벤트 데이터를 파싱해서 Key를 구분해서 액션을 처리해야 함.
+            // TODO 처리한 다음 response가 필요하면 postMessage
+            // window.parent.postMessage('message', 'http://localhost:3000');
+        }
+
         window.addEventListener('dragover', handleFileDrag);
         window.addEventListener('drop', handleFileDrop);
+        window.addEventListener("message", receiveMessage, false);
 
         return () => {
             window.removeEventListener('dragover', handleFileDrag);
             window.removeEventListener('drop', handleFileDrop);
+            window.removeEventListener("message", receiveMessage, false);
         };
     }, [editorAPI]);
 
