@@ -1,22 +1,18 @@
 import DarkModeToggle from './components/DarkModeToggle';
 import FloatingButton from './components/FloatingButton';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Sidebar from './components/Sidebar';
 import TitleTextBox from './components/TitleTextBox';
 import WordCount from './components/WordCount';
-import {$getRoot, $isDecoratorNode} from 'lexical';
-import {
-    KoenigComposer, KoenigEditor,
-    TKCountPlugin,
-    WordCountPlugin
-} from '../src';
-import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
-import {fetchEmbed} from './utils/fetchEmbed';
-import {fileTypes, useFileUpload} from './utils/useFileUpload';
-import {tenorConfig} from './utils/tenorConfig';
-import {useCollections} from './utils/useCollections';
-import {useLocation, useSearchParams} from 'react-router-dom';
-import {useSnippets} from './utils/useSnippets';
+import { $getRoot, $isDecoratorNode } from 'lexical';
+import { KoenigComposer, KoenigEditor, TKCountPlugin, WordCountPlugin } from '../src';
+import { defaultHeaders as defaultUnsplashHeaders } from './utils/unsplashConfig';
+import { fetchEmbed } from './utils/fetchEmbed';
+import { fileTypes, useFileUpload } from './utils/useFileUpload';
+import { tenorConfig } from './utils/tenorConfig';
+import { useCollections } from './utils/useCollections';
+import { useLocation, useSearchParams } from 'react-router-dom';
+import { useSnippets } from './utils/useSnippets';
 
 const url = new URL(window.location.href);
 const params = new URLSearchParams(url.search);
@@ -24,12 +20,12 @@ const WEBSOCKET_ENDPOINT = params.get('multiplayerEndpoint') || 'ws://localhost:
 const WEBSOCKET_ID = params.get('multiplayerId') || '0';
 
 const cardConfig = {
-    unsplash: {defaultHeaders: defaultUnsplashHeaders},
+    unsplash: { defaultHeaders: defaultUnsplashHeaders },
     fetchEmbed: fetchEmbed,
     tenor: tenorConfig,
     fetchAutocompleteLinks: () => Promise.resolve([
-        {label: 'Homepage', value: window.location.origin + '/'},
-        {label: 'Free signup', value: window.location.origin + '/#/portal/signup/free'}
+        { label: 'Homepage', value: window.location.origin + '/' },
+        { label: 'Free signup', value: window.location.origin + '/#/portal/signup/free' }
     ]),
     fetchLabels: () => Promise.resolve(['Label 1', 'Label 2']),
     siteTitle: 'Koenig Lexical',
@@ -47,11 +43,7 @@ const cardConfig = {
 function DemoEditor({ registerAPI, cursorDidExitAtTop, darkMode, setWordCount, setTKCount })
 {
     return (
-        <KoenigEditor
-            cursorDidExitAtTop={ cursorDidExitAtTop }
-            darkMode={ darkMode }
-            registerAPI={ registerAPI }
-        >
+        <KoenigEditor cursorDidExitAtTop={ cursorDidExitAtTop } darkMode={ darkMode } registerAPI={ registerAPI }>
             <WordCountPlugin onChange={ setWordCount }/>
             <TKCountPlugin onChange={ setTKCount }/>
         </KoenigEditor>
